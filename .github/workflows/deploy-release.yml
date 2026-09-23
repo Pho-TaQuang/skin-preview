@@ -1,0 +1,28 @@
+name: Deploy to Firebase Hosting on Release/Tag
+
+on:
+  push:
+    tags:
+      - 'v*' # Chỉ chạy khi bạn đẩy lên một tag bắt đầu bằng "v" (ví dụ: v1.0.0, v2.1)
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔨 Build project
+        run: npm run build
+
+      - name: 🚀 Deploy to Firebase
+        # Sử dụng token bảo mật để deploy mà không cần đăng nhập tương tác
+        run: npx firebase-tools deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
