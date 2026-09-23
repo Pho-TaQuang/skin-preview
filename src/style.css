@@ -47,6 +47,14 @@ body {
   flex-direction: column;
   gap: 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top left;
+}
+
+.ui-panel.hidden {
+  transform: scale(0.95);
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Custom Scrollbar for UI Panel */
@@ -62,13 +70,73 @@ body {
   border-radius: 4px;
 }
 
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 12px;
+}
+
 .ui-panel h1 {
   font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: 1px;
-  text-align: center;
-  border-bottom: 1px solid var(--glass-border);
-  padding-bottom: 12px;
+  margin: 0;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  flex: 0 0 auto;
+}
+
+.icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.floating-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  flex: none;
+}
+
+.floating-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.floating-btn.hidden {
+  transform: scale(0.8);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .drop-zone {
@@ -163,7 +231,7 @@ button {
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, background-color 0.2s;
 }
 
 button:hover {

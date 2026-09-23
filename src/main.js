@@ -70,6 +70,24 @@ dropZone.addEventListener('drop', (e) => {
   }
 });
 
+// --- UI Toggle ---
+const uiPanel = document.getElementById('ui-panel');
+const openSettingsBtn = document.getElementById('open-settings');
+const closeSettingsBtn = document.getElementById('close-settings');
+
+// Hide open settings button initially because panel is open
+openSettingsBtn.classList.add('hidden');
+
+openSettingsBtn.addEventListener('click', () => {
+  uiPanel.classList.remove('hidden');
+  openSettingsBtn.classList.add('hidden');
+});
+
+closeSettingsBtn.addEventListener('click', () => {
+  uiPanel.classList.add('hidden');
+  openSettingsBtn.classList.remove('hidden');
+});
+
 // Controls
 const scaleEl = document.getElementById('scale');
 const offsetXEl = document.getElementById('offset-x');
