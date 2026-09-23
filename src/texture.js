@@ -28,29 +28,33 @@ export class TextureManager {
   }
   
   drawPlaceholder() {
-    const canvasSize = 2048;
-    this.canvas.width = canvasSize;
-    this.canvas.height = canvasSize;
+    const physicalW = 95.5;
+    const physicalH = 171.5;
+    const canvasW = 2048;
+    const canvasH = Math.round(canvasW * (physicalH / physicalW));
+
+    this.canvas.width = canvasW;
+    this.canvas.height = canvasH;
     this.ctx.fillStyle = '#1a1a24';
-    this.ctx.fillRect(0, 0, canvasSize, canvasSize);
+    this.ctx.fillRect(0, 0, canvasW, canvasH);
     
     this.ctx.strokeStyle = '#333344';
     this.ctx.lineWidth = 4;
-    for (let i = 0; i <= canvasSize; i += 128) {
+    for (let i = 0; i <= Math.max(canvasW, canvasH); i += 128) {
       this.ctx.beginPath();
       this.ctx.moveTo(i, 0);
-      this.ctx.lineTo(i, canvasSize);
+      this.ctx.lineTo(i, canvasH);
       this.ctx.stroke();
       this.ctx.beginPath();
       this.ctx.moveTo(0, i);
-      this.ctx.lineTo(canvasSize, i);
+      this.ctx.lineTo(canvasW, i);
       this.ctx.stroke();
     }
     
     this.ctx.fillStyle = '#555577';
     this.ctx.font = '80px sans-serif';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('DROP IMAGE HERE', canvasSize/2, canvasSize/2);
+    this.ctx.fillText('DROP IMAGE HERE', canvasW/2, canvasH/2);
     
     this.texture.needsUpdate = true;
     if (this.onTextureUpdate) this.onTextureUpdate(this.texture);
@@ -88,38 +92,37 @@ export class TextureManager {
   updateTexture() {
     if (!this.image) return;
 
-    // Fixed high res canvas size
-    const canvasSize = 2048; 
-    this.canvas.width = canvasSize;
-    this.canvas.height = canvasSize;
+    const physicalW = 95.5;
+    const physicalH = 171.5;
+    const canvasW = 2048;
+    const canvasH = Math.round(canvasW * (physicalH / physicalW));
+
+    this.canvas.width = canvasW;
+    this.canvas.height = canvasH;
 
     // Fill background with black to ensure we see it
     this.ctx.fillStyle = '#000000';
-    this.ctx.fillRect(0, 0, canvasSize, canvasSize);
+    this.ctx.fillRect(0, 0, canvasW, canvasH);
 
     let drawWidth, drawHeight, startX, startY;
 
     const imgAspect = this.image.width / this.image.height;
-    // Phone aspect ratio including edges:
-    // W = 71.5, H = 147.5, D = 7.85
-    // UV space width roughly W + D*2 = 87.2
-    // UV space height roughly H + D*2 = 163.2
-    const phoneAspect = 87.2 / 163.2; 
+    const phoneAspect = physicalW / physicalH; 
 
     if (this.params.fit === 'cover') {
       if (imgAspect > phoneAspect) {
-        drawHeight = canvasSize;
+        drawHeight = canvasH;
         drawWidth = drawHeight * imgAspect;
       } else {
-        drawWidth = canvasSize;
+        drawWidth = canvasW;
         drawHeight = drawWidth / imgAspect;
       }
     } else { // contain
       if (imgAspect > phoneAspect) {
-        drawWidth = canvasSize;
+        drawWidth = canvasW;
         drawHeight = drawWidth / imgAspect;
       } else {
-        drawHeight = canvasSize;
+        drawHeight = canvasH;
         drawWidth = drawHeight * imgAspect;
       }
     }
@@ -128,8 +131,8 @@ export class TextureManager {
     drawHeight *= this.params.scale;
 
     // Center image and apply offset
-    startX = (canvasSize - drawWidth) / 2 + (this.params.offsetX * canvasSize);
-    startY = (canvasSize - drawHeight) / 2 - (this.params.offsetY * canvasSize);
+    startX = (canvasW - drawWidth) / 2 + (this.params.offsetX * canvasW);
+    startY = (canvasH - drawHeight) / 2 - (this.params.offsetY * canvasH);
 
     this.ctx.drawImage(this.image, startX, startY, drawWidth, drawHeight);
     
