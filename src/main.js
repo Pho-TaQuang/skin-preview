@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createPhoneModel } from './phone.js';
 import { TextureManager } from './texture.js';
 
@@ -11,6 +12,11 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 container.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0a); // Default dark background
+
+// Add realistic studio lighting environment
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -133,6 +139,22 @@ document.getElementById('reset-image').addEventListener('click', () => {
   offsetYEl.value = 0;
   document.querySelector('input[name="fit"][value="cover"]').checked = true;
   updateParams('range');
+});
+
+// Theme Toggle
+const themeBtn = document.getElementById('toggle-theme');
+let isLightMode = false;
+themeBtn.addEventListener('click', () => {
+  isLightMode = !isLightMode;
+  if (isLightMode) {
+    document.body.classList.add('light-mode');
+    scene.background.setHex(0xf0f0f5);
+    themeBtn.textContent = '☀️';
+  } else {
+    document.body.classList.remove('light-mode');
+    scene.background.setHex(0x0a0a0a);
+    themeBtn.textContent = '🌙';
+  }
 });
 
 // Camera Views (Phone back is at +Z)
