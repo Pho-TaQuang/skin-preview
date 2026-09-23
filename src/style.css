@@ -170,17 +170,51 @@ body {
   gap: 16px;
 }
 
-.control-group label {
+.control-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.label-row {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  align-items: center;
   margin-bottom: 8px;
+}
+
+.label-row label {
+  margin: 0;
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
-.control-group label span {
+.num-input {
+  width: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
   color: var(--text-main);
-  font-variant-numeric: tabular-nums;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  text-align: right;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.num-input:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Hide number input spinners for cleaner look */
+.num-input::-webkit-outer-spin-button,
+.num-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.num-input[type=number] {
+  -moz-appearance: textfield;
 }
 
 input[type="range"] {

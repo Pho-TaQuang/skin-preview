@@ -92,32 +92,47 @@ closeSettingsBtn.addEventListener('click', () => {
 const scaleEl = document.getElementById('scale');
 const offsetXEl = document.getElementById('offset-x');
 const offsetYEl = document.getElementById('offset-y');
+const scaleNum = document.getElementById('scale-num');
+const offsetXNum = document.getElementById('offset-x-num');
+const offsetYNum = document.getElementById('offset-y-num');
 const fitRadios = document.querySelectorAll('input[name="fit"]');
 
-const updateParams = () => {
+const updateParams = (source) => {
+  // Sync sliders and number inputs based on who triggered the update
+  if (source === 'range') {
+    scaleNum.value = parseFloat(scaleEl.value).toFixed(2);
+    offsetXNum.value = parseFloat(offsetXEl.value).toFixed(2);
+    offsetYNum.value = parseFloat(offsetYEl.value).toFixed(2);
+  } else if (source === 'number') {
+    scaleEl.value = parseFloat(scaleNum.value);
+    offsetXEl.value = parseFloat(offsetXNum.value);
+    offsetYEl.value = parseFloat(offsetYNum.value);
+  }
+
   textureManager.updateParams({
     fit: document.querySelector('input[name="fit"]:checked').value,
     scale: parseFloat(scaleEl.value),
     offsetX: parseFloat(offsetXEl.value),
     offsetY: parseFloat(offsetYEl.value)
   });
-  
-  document.getElementById('scale-val').textContent = `(${parseFloat(scaleEl.value).toFixed(2)}x)`;
-  document.getElementById('offset-x-val').textContent = `(${parseFloat(offsetXEl.value).toFixed(2)})`;
-  document.getElementById('offset-y-val').textContent = `(${parseFloat(offsetYEl.value).toFixed(2)})`;
 };
 
-scaleEl.addEventListener('input', updateParams);
-offsetXEl.addEventListener('input', updateParams);
-offsetYEl.addEventListener('input', updateParams);
-fitRadios.forEach(r => r.addEventListener('change', updateParams));
+scaleEl.addEventListener('input', () => updateParams('range'));
+offsetXEl.addEventListener('input', () => updateParams('range'));
+offsetYEl.addEventListener('input', () => updateParams('range'));
+
+scaleNum.addEventListener('input', () => updateParams('number'));
+offsetXNum.addEventListener('input', () => updateParams('number'));
+offsetYNum.addEventListener('input', () => updateParams('number'));
+
+fitRadios.forEach(r => r.addEventListener('change', () => updateParams('range')));
 
 document.getElementById('reset-image').addEventListener('click', () => {
   scaleEl.value = 1;
   offsetXEl.value = 0;
   offsetYEl.value = 0;
   document.querySelector('input[name="fit"][value="cover"]').checked = true;
-  updateParams();
+  updateParams('range');
 });
 
 // Camera Views (Phone back is at +Z)
