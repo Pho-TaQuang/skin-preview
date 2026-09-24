@@ -103,6 +103,13 @@ const offsetXNum = document.getElementById('offset-x-num');
 const offsetYNum = document.getElementById('offset-y-num');
 const fitRadios = document.querySelectorAll('input[name="fit"]');
 
+const roughnessEl = document.getElementById('roughness');
+const metalnessEl = document.getElementById('metalness');
+const bumpScaleEl = document.getElementById('bump-scale');
+const roughnessNum = document.getElementById('roughness-num');
+const metalnessNum = document.getElementById('metalness-num');
+const bumpScaleNum = document.getElementById('bump-scale-num');
+
 const updateParams = (source) => {
   // Sync sliders and number inputs based on who triggered the update
   if (source === 'range') {
@@ -132,6 +139,31 @@ offsetXNum.addEventListener('input', () => updateParams('number'));
 offsetYNum.addEventListener('input', () => updateParams('number'));
 
 fitRadios.forEach(r => r.addEventListener('change', () => updateParams('range')));
+
+const updateMaterial = (source) => {
+  if (source === 'range') {
+    roughnessNum.value = parseFloat(roughnessEl.value).toFixed(2);
+    metalnessNum.value = parseFloat(metalnessEl.value).toFixed(2);
+    bumpScaleNum.value = parseFloat(bumpScaleEl.value).toFixed(2);
+  } else if (source === 'number') {
+    roughnessEl.value = parseFloat(roughnessNum.value);
+    metalnessEl.value = parseFloat(metalnessNum.value);
+    bumpScaleEl.value = parseFloat(bumpScaleNum.value);
+  }
+  
+  skinMaterial.roughness = parseFloat(roughnessEl.value);
+  skinMaterial.metalness = parseFloat(metalnessEl.value);
+  skinMaterial.bumpScale = parseFloat(bumpScaleEl.value);
+  skinMaterial.needsUpdate = true;
+};
+
+roughnessEl.addEventListener('input', () => updateMaterial('range'));
+metalnessEl.addEventListener('input', () => updateMaterial('range'));
+bumpScaleEl.addEventListener('input', () => updateMaterial('range'));
+
+roughnessNum.addEventListener('input', () => updateMaterial('number'));
+metalnessNum.addEventListener('input', () => updateMaterial('number'));
+bumpScaleNum.addEventListener('input', () => updateMaterial('number'));
 
 // Procedural Bump Maps
 function generateNoiseBumpMap() {
@@ -164,35 +196,65 @@ function generateLeatherBumpMap() {
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   
-  ctx.fillStyle = '#888';
+  // Base color
+  ctx.fillStyle = '#666';
   ctx.fillRect(0, 0, size, size);
   
-  // Draw organic blobs for leather grain - high contrast
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-  for (let i = 0; i < 20000; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const r = Math.random() * 5 + 2;
+  // Draw random bright wrinkles
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  
+  for(let i=0; i<800; i++) {
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
+    let x = Math.random() * size;
+    let y = Math.random() * size;
+    ctx.moveTo(x, y);
+    for(let j=0; j<3; j++) {
+      let cp1x = x + (Math.random() - 0.5) * 40;
+      let cp1y = y + (Math.random() - 0.5) * 40;
+      let cp2x = x + (Math.random() - 0.5) * 40;
+      let cp2y = y + (Math.random() - 0.5) * 40;
+      x += (Math.random() - 0.5) * 60;
+      y += (Math.random() - 0.5) * 60;
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+    }
+    ctx.stroke();
   }
   
-  // Draw dark crevices - high contrast
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-  for (let i = 0; i < 20000; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const r = Math.random() * 4 + 1;
+  // Draw deep dark crevices
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+  ctx.lineWidth = 2;
+  for(let i=0; i<1200; i++) {
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    let x = Math.random() * size;
+    let y = Math.random() * size;
+    ctx.moveTo(x, y);
+    for(let j=0; j<4; j++) {
+      let cp1x = x + (Math.random() - 0.5) * 30;
+      let cp1y = y + (Math.random() - 0.5) * 30;
+      let cp2x = x + (Math.random() - 0.5) * 30;
+      let cp2y = y + (Math.random() - 0.5) * 30;
+      x += (Math.random() - 0.5) * 40;
+      y += (Math.random() - 0.5) * 40;
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+    }
+    ctx.stroke();
+  }
+
+  // Draw some fine pores
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  for (let i = 0; i < 5000; i++) {
+    ctx.beginPath();
+    ctx.arc(Math.random() * size, Math.random() * size, Math.random() * 1.5 + 0.5, 0, Math.PI * 2);
     ctx.fill();
   }
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(3, 3); // More repetition so grains are smaller but high contrast
+  texture.repeat.set(2, 2); 
   return texture;
 }
 
@@ -204,26 +266,27 @@ const skinFinishSelect = document.getElementById('skin-finish');
 skinFinishSelect.addEventListener('change', (e) => {
   const type = e.target.value;
   if (type === 'glossy') {
-    skinMaterial.roughness = 0.1;
-    skinMaterial.metalness = 0.1;
+    roughnessEl.value = 0.1;
+    metalnessEl.value = 0.1;
+    bumpScaleEl.value = 0;
     skinMaterial.clearcoat = 1.0;
     skinMaterial.clearcoatRoughness = 0.1;
     skinMaterial.bumpMap = null;
   } else if (type === 'matte') {
-    skinMaterial.roughness = 0.8;
-    skinMaterial.metalness = 0.05;
+    roughnessEl.value = 0.8;
+    metalnessEl.value = 0.05;
+    bumpScaleEl.value = 0.05;
     skinMaterial.clearcoat = 0.0;
     skinMaterial.bumpMap = noiseBumpMap;
-    skinMaterial.bumpScale = 0.08; // Stronger grainy texture
   } else if (type === 'leather') {
-    skinMaterial.roughness = 0.7;
-    skinMaterial.metalness = 0.1;
+    roughnessEl.value = 0.7;
+    metalnessEl.value = 0.1;
+    bumpScaleEl.value = 0.2;
     skinMaterial.clearcoat = 0.1;
     skinMaterial.clearcoatRoughness = 0.5;
     skinMaterial.bumpMap = leatherBumpMap;
-    skinMaterial.bumpScale = 0.5; // Very strong leather grain
   }
-  skinMaterial.needsUpdate = true;
+  updateMaterial('range');
 });
 
 // Trigger change immediately to apply default (Matte)
