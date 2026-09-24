@@ -167,8 +167,19 @@ function generateLeatherBumpMap() {
   ctx.fillStyle = '#888';
   ctx.fillRect(0, 0, size, size);
   
-  // Draw organic blobs for leather grain
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  // Draw organic blobs for leather grain - high contrast
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  for (let i = 0; i < 20000; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = Math.random() * 5 + 2;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Draw dark crevices - high contrast
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
   for (let i = 0; i < 20000; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
@@ -177,22 +188,11 @@ function generateLeatherBumpMap() {
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
-  
-  // Draw dark crevices
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-  for (let i = 0; i < 15000; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const r = Math.random() * 3 + 0.5;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(2, 4); // Stretch slightly for grain effect
+  texture.repeat.set(3, 3); // More repetition so grains are smaller but high contrast
   return texture;
 }
 
@@ -214,14 +214,14 @@ skinFinishSelect.addEventListener('change', (e) => {
     skinMaterial.metalness = 0.05;
     skinMaterial.clearcoat = 0.0;
     skinMaterial.bumpMap = noiseBumpMap;
-    skinMaterial.bumpScale = 0.02; // Fine grainy texture
+    skinMaterial.bumpScale = 0.08; // Stronger grainy texture
   } else if (type === 'leather') {
     skinMaterial.roughness = 0.7;
     skinMaterial.metalness = 0.1;
     skinMaterial.clearcoat = 0.1;
     skinMaterial.clearcoatRoughness = 0.5;
     skinMaterial.bumpMap = leatherBumpMap;
-    skinMaterial.bumpScale = 0.15; // Strong leather grain
+    skinMaterial.bumpScale = 0.5; // Very strong leather grain
   }
   skinMaterial.needsUpdate = true;
 });
