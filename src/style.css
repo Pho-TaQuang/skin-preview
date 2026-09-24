@@ -198,21 +198,37 @@ body {
   color: var(--text-muted);
 }
 
-.num-input {
-  width: 60px;
+.num-input, .select-input {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--glass-border);
   color: var(--text-main);
   border-radius: 4px;
   padding: 4px 6px;
-  font-size: 0.8rem;
-  font-family: monospace;
-  text-align: right;
   outline: none;
   transition: border-color 0.2s, background-color 0.2s;
 }
 
-.num-input:focus {
+.num-input {
+  width: 60px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  text-align: right;
+}
+
+.select-input {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  appearance: none;
+}
+
+.select-input option {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.num-input:focus, .select-input:focus {
   border-color: var(--accent);
   background: rgba(255, 255, 255, 0.15);
 }

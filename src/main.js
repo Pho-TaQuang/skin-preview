@@ -17,6 +17,8 @@ scene.background = new THREE.Color(0x0a0a0a); // Default dark background
 // Add realistic studio lighting environment
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -28,16 +30,14 @@ controls.dampingFactor = 0.05;
 controls.enablePan = false;
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+// Minimal ambient and directional lights just to fill some dark spots.
+// RoomEnvironment handles 95% of realistic lighting and reflections.
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
 dirLight.position.set(100, 100, 150);
 scene.add(dirLight);
-
-const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
-dirLight2.position.set(-100, -100, -150);
-scene.add(dirLight2);
 
 // --- Phone Model ---
 const { phoneGroup, skinMaterial } = createPhoneModel();
@@ -132,6 +132,57 @@ offsetXNum.addEventListener('input', () => updateParams('number'));
 offsetYNum.addEventListener('input', () => updateParams('number'));
 
 fitRadios.forEach(r => r.addEventListener('change', () => updateParams('range')));
+
+// Procedural Leather Bump Map
+function generateLeatherBumpMap() {
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.createImageData(size, size);
+  const data = imgData.data;
+  for (let i = 0; i < data.length; i += 4) {
+      const val = Math.random() * 255; 
+      data[i] = val;
+      data[i+1] = val;
+      data[i+2] = val;
+      data[i+3] = 255;
+  }
+  ctx.putImageData(imgData, 0, 0);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(3, 3); 
+  return texture;
+}
+const leatherBumpMap = generateLeatherBumpMap();
+
+// Skin Finish Toggle
+const skinFinishSelect = document.getElementById('skin-finish');
+skinFinishSelect.addEventListener('change', (e) => {
+  const type = e.target.value;
+  if (type === 'glossy') {
+    skinMaterial.roughness = 0.1;
+    skinMaterial.metalness = 0.1;
+    skinMaterial.clearcoat = 1.0;
+    skinMaterial.clearcoatRoughness = 0.1;
+    skinMaterial.bumpMap = null;
+  } else if (type === 'matte') {
+    skinMaterial.roughness = 0.8;
+    skinMaterial.metalness = 0.05;
+    skinMaterial.clearcoat = 0.0;
+    skinMaterial.bumpMap = null;
+  } else if (type === 'leather') {
+    skinMaterial.roughness = 0.7;
+    skinMaterial.metalness = 0.1;
+    skinMaterial.clearcoat = 0.1;
+    skinMaterial.clearcoatRoughness = 0.5;
+    skinMaterial.bumpMap = leatherBumpMap;
+    skinMaterial.bumpScale = 0.005; // tiny bump for pores
+  }
+  skinMaterial.needsUpdate = true;
+});
 
 document.getElementById('reset-image').addEventListener('click', () => {
   scaleEl.value = 1;
