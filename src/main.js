@@ -133,9 +133,9 @@ offsetYNum.addEventListener('input', () => updateParams('number'));
 
 fitRadios.forEach(r => r.addEventListener('change', () => updateParams('range')));
 
-// Procedural Leather Bump Map
-function generateLeatherBumpMap() {
-  const size = 512;
+// Procedural Bump Maps
+function generateNoiseBumpMap() {
+  const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
@@ -153,9 +153,50 @@ function generateLeatherBumpMap() {
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(3, 3); 
+  texture.repeat.set(4, 4); 
   return texture;
 }
+
+function generateLeatherBumpMap() {
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.fillStyle = '#888';
+  ctx.fillRect(0, 0, size, size);
+  
+  // Draw organic blobs for leather grain
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  for (let i = 0; i < 20000; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = Math.random() * 4 + 1;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Draw dark crevices
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+  for (let i = 0; i < 15000; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = Math.random() * 3 + 0.5;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2, 4); // Stretch slightly for grain effect
+  return texture;
+}
+
+const noiseBumpMap = generateNoiseBumpMap();
 const leatherBumpMap = generateLeatherBumpMap();
 
 // Skin Finish Toggle
@@ -172,17 +213,21 @@ skinFinishSelect.addEventListener('change', (e) => {
     skinMaterial.roughness = 0.8;
     skinMaterial.metalness = 0.05;
     skinMaterial.clearcoat = 0.0;
-    skinMaterial.bumpMap = null;
+    skinMaterial.bumpMap = noiseBumpMap;
+    skinMaterial.bumpScale = 0.02; // Fine grainy texture
   } else if (type === 'leather') {
     skinMaterial.roughness = 0.7;
     skinMaterial.metalness = 0.1;
     skinMaterial.clearcoat = 0.1;
     skinMaterial.clearcoatRoughness = 0.5;
     skinMaterial.bumpMap = leatherBumpMap;
-    skinMaterial.bumpScale = 0.005; // tiny bump for pores
+    skinMaterial.bumpScale = 0.15; // Strong leather grain
   }
   skinMaterial.needsUpdate = true;
 });
+
+// Trigger change immediately to apply default (Matte)
+skinFinishSelect.dispatchEvent(new Event('change'));
 
 document.getElementById('reset-image').addEventListener('click', () => {
   scaleEl.value = 1;
